@@ -2,8 +2,8 @@ from functools import partial
 
 import pytest
 
-from inject.exceptions import ProvideObjectError, ProvideObjectAttributeError
-from inject.providers import FactoryProvider
+from ioc.exceptions import ProvideObjectError, ProvideObjectAttributeError
+from ioc.providers import FactoryProvider
 from tests.conftest import DummyDatabase
 
 

@@ -2,9 +2,9 @@
 
 import pytest
 from unittest.mock import Mock, MagicMock, patch
-from inject.wiring import Provide, inject, _inject_dependencies, _resolve_provider
-from inject.container import Container
-from inject.providers import FactoryProvider, SingletonProvider
+from ioc.wiring import Provide, inject, _inject_dependencies, _resolve_provider
+from ioc.container import Container
+from ioc.providers import FactoryProvider, SingletonProvider
 
 
 class TestProvideMarker:
@@ -82,7 +82,7 @@ class TestInjectDecorator:
             return db
         
         # Act
-        with patch('inject.wiring._get_current_container', return_value=container):
+        with patch('ioc.wiring._get_current_container', return_value=container):
             result = test_func()
         
         # Assert
@@ -99,7 +99,7 @@ class TestInjectDecorator:
             return db
         
         # Act
-        with patch('inject.wiring._get_current_container', return_value=container):
+        with patch('ioc.wiring._get_current_container', return_value=container):
             result = test_func(db=custom_db)
         
         # Assert
@@ -232,7 +232,7 @@ class TestContainerWiring:
         container = self.container
         
         # Act & Assert
-        with patch('inject.wiring._set_current_container') as mock_set:
+        with patch('ioc.wiring._set_current_container') as mock_set:
             container.wire()
             mock_set.assert_called_once_with(container)
     
@@ -242,8 +242,8 @@ class TestContainerWiring:
         container = self.container
         
         # Act & Assert
-        with patch('inject.wiring._get_current_container', return_value=container), \
-             patch('inject.wiring._set_current_container') as mock_set:
+        with patch('ioc.wiring._get_current_container', return_value=container), \
+             patch('ioc.wiring._set_current_container') as mock_set:
             container.unwire()
             mock_set.assert_called_once_with(None)
     
@@ -254,7 +254,7 @@ class TestContainerWiring:
         other_container = Container()
         
         # Act & Assert
-        with patch('inject.wiring._get_current_container', return_value=other_container), \
-             patch('inject.wiring._set_current_container') as mock_set:
+        with patch('ioc.wiring._get_current_container', return_value=other_container), \
+             patch('ioc.wiring._set_current_container') as mock_set:
             container.unwire()
             mock_set.assert_not_called()

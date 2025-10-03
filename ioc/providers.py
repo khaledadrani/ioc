@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from functools import partial
 from typing import Any, Dict, Type, Optional
-from inject.exceptions import ProvideObjectError
-from inject.base_provider import Provider
-from inject.config_provider import ConfigurationProvider, ConfigurationOption, TypedConfigurationOption
+from .exceptions import ProvideObjectError
+from .base_provider import Provider
+from .config_provider import ConfigurationProvider, ConfigurationOption, TypedConfigurationOption
 
 
 class FactoryProvider(Provider):

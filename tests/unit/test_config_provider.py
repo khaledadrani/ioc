@@ -4,9 +4,9 @@ import json
 import tempfile
 from unittest.mock import patch, mock_open
 
-from inject.config_provider import ConfigurationProvider, ConfigurationOption, TypedConfigurationOption
-from inject.base_provider import Provider
-from inject.exceptions import ProvideObjectError
+from ioc.config_provider import ConfigurationProvider, ConfigurationOption, TypedConfigurationOption
+from ioc.base_provider import Provider
+from ioc.exceptions import ProvideObjectError
 
 
 class TestConfigurationProvider:
@@ -97,7 +97,7 @@ class TestConfigurationProvider:
         expected_data = {"app": {"name": "test_app", "version": 1.0}}
         
         with patch("builtins.open", mock_open(read_data=yaml_content)):
-            with patch("inject.config_provider.yaml") as mock_yaml:
+            with patch("ioc.config_provider.yaml") as mock_yaml:
                 mock_yaml.safe_load.return_value = expected_data
                 
                 # Act
@@ -109,7 +109,7 @@ class TestConfigurationProvider:
 
     def test_from_yaml_no_yaml_module_raises_error(self):
         # Arrange
-        with patch("inject.config_provider.yaml", None):
+        with patch("ioc.config_provider.yaml", None):
             # Act & Assert
             with pytest.raises(ProvideObjectError) as exc_info:
                 self.config.from_yaml("test.yaml")
@@ -118,7 +118,7 @@ class TestConfigurationProvider:
 
     def test_from_yaml_file_not_found_raises_error(self):
         # Arrange
-        with patch("inject.config_provider.yaml") as mock_yaml:
+        with patch("ioc.config_provider.yaml") as mock_yaml:
             # Act & Assert
             with pytest.raises(ProvideObjectError) as exc_info:
                 self.config.from_yaml("nonexistent.yaml")

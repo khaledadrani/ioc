@@ -4,9 +4,9 @@
 import os
 import tempfile
 import json
-from inject.config_provider import ConfigurationProvider
-from inject.providers import FactoryProvider, SingletonProvider
-from inject.container import BaseContainer
+from ioc.config_provider import ConfigurationProvider
+from ioc.providers import FactoryProvider, SingletonProvider
+from ioc.container import BaseContainer
 from tests.conftest import DummyDatabase, DummyRepository, DummyService
 
 

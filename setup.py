@@ -1,22 +1,27 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name='Inject',
-    version='0.0.0',
+    name='ioc',
+    version='0.1.0',
     description='A Dependency Injection Framework For Python Projects',
     author='Khaled Adrani',
     author_email='khaledadrani@gmail.com',
-    url='https://github.com/khaledadrani/inject',
-    packages=['inject'],
+    url='https://github.com/khaledadrani/ioc',
+    packages=find_packages(),
+    python_requires='>=3.8',
     install_requires=[
+        'pyyaml>=6.0',
     ],
+    extras_require={
+        'dev': ['pytest>=7.0', 'pytest-cov'],
+    },
     classifiers=[
-        'Development Status :: 5 - Development/Prototype',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
-    tests_require=['pytest==7.4.0'],
-    test_suite='tests',
-
 )

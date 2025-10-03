@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Simple test script for the updated IoC classes."""
 
-from inject.providers import FactoryProvider, SingletonProvider
+from ioc.providers import FactoryProvider, SingletonProvider
 from tests.conftest import DummyDatabase, DummyRepository, DummyService
 
 

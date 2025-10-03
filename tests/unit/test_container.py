@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import MagicMock
 
-from inject.container import Container, ContainerOverrideContext, BaseContainer
-from inject.providers import FactoryProvider, SingletonProvider
-from inject.base_provider import Provider
+from ioc.container import Container, ContainerOverrideContext, BaseContainer
+from ioc.providers import FactoryProvider, SingletonProvider
+from ioc.base_provider import Provider
 from tests.conftest import DummyDatabase, DummyRepository, DummyService
 
 

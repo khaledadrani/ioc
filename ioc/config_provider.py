@@ -2,8 +2,8 @@
 
 import json
 import os
-from inject.base_provider import Provider
-from inject.exceptions import ProvideObjectError
+from .base_provider import Provider
+from .exceptions import ProvideObjectError
 
 try:
     import yaml

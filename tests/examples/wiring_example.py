@@ -1,6 +1,6 @@
 """Example demonstrating automatic dependency injection wiring."""
 
-from inject import Container, FactoryProvider, SingletonProvider, Provide, inject
+from ioc import Container, FactoryProvider, SingletonProvider, Provide, inject
 
 
 # Example services

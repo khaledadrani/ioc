@@ -16,7 +16,7 @@ A modern, lightweight dependency injection framework for Python projects with au
 ## Quick Start
 
 ```python
-from inject import Container, FactoryProvider, inject, Provide
+from ioc import Container, FactoryProvider, inject, Provide
 
 # Define your services
 class Database:
@@ -45,7 +45,7 @@ container.wire(modules=[__name__])
 ## Configuration Support
 
 ```python
-from inject import ConfigurationProvider
+from ioc import ConfigurationProvider
 
 # Load from YAML/JSON
 config = ConfigurationProvider()
@@ -73,11 +73,11 @@ with container.database.override(test_db):
 ## Installation & Build
 
 ```bash
-# Build the library
-python setup.py bdist_wheel
+# Install from source
+pip install .
 
 # Install for development
-pip install -e .
+pip install -e .[dev]
 
 # Run tests
 python -m pytest tests/
