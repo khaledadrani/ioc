@@ -1,7 +1,6 @@
 from functools import partial
 
 import pytest
-from _pytest.python_api import raises
 
 from inject.exceptions import ProvideObjectError, ProvideObjectAttributeError
 from inject.providers import FactoryProvider
@@ -29,15 +28,15 @@ class TestBasicProvider:
     def test_provide_object(self):
         object_provider = self.create_provide_object()
 
-        result = object_provider.provide()
+        result = object_provider()
 
         assert isinstance(result, self.object_to_provide)
 
     def test_bad_arguments_for_provide(self):
         object_provider = self.create_provide_object_bad()
 
-        with raises(ProvideObjectError):
-            object_provider.provide()
+        with pytest.raises(ProvideObjectError):
+            object_provider()
 
     def test_str_method(self):
         object_provider = self.create_provide_object()
@@ -53,6 +52,20 @@ class TestBasicProvider:
 
         assert isinstance(result, self.object_to_provide)
 
+    def test_provider_override_success(self):
+        # Arrange
+        original_provider = self.create_provide_object()
+        override_provider = FactoryProvider(self.object_to_provide, connection_string="override_url")
+        
+        # Act
+        with original_provider.override(override_provider) as override:
+            result = original_provider()
+        
+        # Assert
+        assert isinstance(result, self.object_to_provide)
+        assert result.connection_string == "override_url"
+        assert override == override_provider
+
     @pytest.mark.skip(reason="no way of currently testing this")
     def test_get_attr(self):
         object_provider = self.create_provide_object()
@@ -64,5 +77,5 @@ class TestBasicProvider:
     @pytest.mark.skip(reason="no way of currently testing this")
     def test_handle_get_attr_error(self):
         object_provider = self.create_provide_object()
-        with raises(ProvideObjectAttributeError):
+        with pytest.raises(ProvideObjectAttributeError):
             _ = object_provider.connection_String

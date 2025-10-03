@@ -1,0 +1,23 @@
+{
+  "app": {
+    "name": "IoC Example App",
+    "version": "1.0.0",
+    "debug": false
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "example_db",
+    "url": "postgresql://user:pass@localhost:5432/example_db"
+  },
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8080,
+    "timeout": 30.0
+  },
+  "features": {
+    "caching": true,
+    "logging": true,
+    "metrics": false
+  }
+}

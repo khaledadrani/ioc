@@ -1,45 +1,51 @@
+from __future__ import annotations
+
 from functools import partial
-
+from typing import Any, Dict, Type, Optional
 from inject.exceptions import ProvideObjectError
+from inject.base_provider import Provider
+from inject.config_provider import ConfigurationProvider, ConfigurationOption, TypedConfigurationOption
 
 
-class Provider(type):
-    def __setitem__(self, key, value):
-        self.__dict__[key] = value
+class FactoryProvider(Provider):
+    def __init__(self, object_class: Type[Any], **kwargs: Any) -> None:
+        super().__init__()
+        self.object_class: Type[Any] = object_class
+        self.arguments: Dict[str, Any] = kwargs
+        self.dependencies: Dict[str, Provider] = {
+            k: v for k, v in self.arguments.items() if isinstance(v, Provider)
+        }
 
+    def __str__(self) -> str:
+        return f"FactoryProvider<{self.object_class.__name__}>"
 
-class FactoryProvider:
-    def __init__(self, object_class, **kwargs):
-        self.object_class = object_class
-        self.arguments = kwargs
-
-        self.dependencies = {k: v for k, v in self.arguments.items() if isinstance(v, Provider)}
-
-        self._provide = partial(self.object_class, **self.arguments)
-
-    def __str__(self):
-        return f"Provider<{self.object_class.__class__}>"
-
-    def provide(self) -> object:
-        resolved = {k: v.provide() for k, v in self.dependencies.items()}
-        resolved_provide = partial(self._provide, **resolved)
+    def _provide(self, args: tuple[Any, ...], kwargs: Dict[str, Any]) -> Any:
+        # Resolve provider dependencies
+        resolved: Dict[str, Any] = {k: v() for k, v in self.dependencies.items()}
+        
+        # Merge with static arguments
+        final_kwargs: Dict[str, Any] = {**self.arguments, **resolved, **kwargs}
+        
         try:
-            return resolved_provide()
-        except TypeError as error:
+            return self.object_class(*args, **final_kwargs)
+        except Exception as error:
             raise ProvideObjectError(message=str(error)) from error
-
-    def __call__(self) -> object:
-        return self.provide()
 
 
 class SingletonProvider(FactoryProvider):
-    def __init__(self, object_class, **kwargs):
+    def __init__(self, object_class: Type[Any], **kwargs: Any) -> None:
         super().__init__(object_class, **kwargs)
-        self._instance = None
+        self._instance: Optional[Any] = None
 
-    def provide(self) -> object:
+    def _provide(self, args: tuple[Any, ...], kwargs: Dict[str, Any]) -> Any:
         if self._instance is None:
-            resolved = {k: v.provide() for k, v in self.dependencies.items()}
-            resolved_provide = partial(self._provide, **resolved)
-            self._instance = resolved_provide()
+            try:
+                self._instance = super()._provide(args, kwargs)
+            except ProvideObjectError:
+                # Don't cache failed instances
+                raise
         return self._instance
+    
+    def reset(self) -> None:
+        """Reset the singleton instance."""
+        self._instance = None
