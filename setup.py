@@ -13,7 +13,7 @@ setup(
         'pyyaml>=6.0',
     ],
     extras_require={
-        'dev': ['pytest>=7.0', 'pytest-cov'],
+        'dev': ['pytest>=7.0', 'pytest-cov', 'pydantic>=1.0'],
     },
     classifiers=[
         'Development Status :: 4 - Beta',
