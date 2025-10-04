@@ -2,7 +2,7 @@
 
 import json
 import os
-from ..exceptions import ProvideObjectError
+from ..exceptions import ProvideObjectError, ConfigurationNotLoadedError
 from .base import Provider
 
 try:

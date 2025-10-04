@@ -2,11 +2,43 @@
 """Real-world example using Configuration provider with a complete application setup."""
 
 import os
-from ioc.config_provider import ConfigurationProvider
-from ioc.providers import FactoryProvider, SingletonProvider
-from ioc.container import BaseContainer
-from ioc.wiring import inject, Provide, auto_inject
+from ioc import (
+    ConfigurationProvider,
+    FactoryProvider, 
+    SingletonProvider, 
+    CallableProvider,
+    Container,
+    inject, 
+    Provide
+)
 
+
+# Utility functions for CallableProvider examples
+def calculate_tax(amount, rate=0.08):
+    """Calculate tax for a given amount."""
+    return amount * rate
+
+def format_currency(amount, currency="USD"):
+    """Format amount as currency."""
+    return f"{currency} {amount:.2f}"
+
+def validate_email(email):
+    """Simple email validation."""
+    return "@" in email and "." in email
+
+def generate_user_id():
+    """Generate a unique user ID."""
+    import random
+    return f"user_{random.randint(1000, 9999)}"
+
+def hash_password(password, salt="default_salt"):
+    """Hash a password with salt."""
+    import hashlib
+    return hashlib.sha256(f"{password}{salt}".encode()).hexdigest()[:16]
+
+def send_sms(phone, message, provider="twilio"):
+    """Send SMS message."""
+    return f"SMS sent via {provider} to {phone}: {message}"
 
 # Application classes
 class DatabaseConnection:
@@ -94,9 +126,17 @@ class Application:
 
 
 # Application Container
-class ApplicationContainer(BaseContainer):
+class ApplicationContainer(Container):
     # Configuration
     config = ConfigurationProvider("app_config")
+    
+    # Utility functions as providers
+    tax_calculator = CallableProvider(calculate_tax, rate=config.tax.rate.as_float())
+    currency_formatter = CallableProvider(format_currency, currency=config.app.currency)
+    email_validator = CallableProvider(validate_email)
+    user_id_generator = CallableProvider(generate_user_id)
+    password_hasher = CallableProvider(hash_password, salt=config.security.salt)
+    sms_sender = CallableProvider(send_sms, provider=config.sms.provider)
     
     # Database
     database = SingletonProvider(
@@ -158,7 +198,17 @@ def test_production_setup():
     container.config.from_dict({
         "app": {
             "name": "Production App",
-            "version": "2.1.0"
+            "version": "2.1.0",
+            "currency": "USD"
+        },
+        "tax": {
+            "rate": "0.08"
+        },
+        "security": {
+            "salt": "prod_salt_2024"
+        },
+        "sms": {
+            "provider": "twilio"
         },
         "database": {
             "host": "prod-db.example.com",
@@ -502,6 +552,78 @@ def test_wiring_patterns():
     print("✓ Advanced patterns test completed")
 
 
+def test_callable_providers():
+    print("\n=== CallableProvider Examples ===")
+    
+    container = ApplicationContainer()
+    container.config.from_dict({
+        "app": {"name": "Callable App", "version": "1.0.0", "currency": "USD"},
+        "tax": {"rate": "0.08"},
+        "security": {"salt": "test_salt"},
+        "sms": {"provider": "test_sms"},
+        "database": {"host": "localhost", "port": "5432", "name": "test_db", "username": "user", "password": "pass"},
+        "cache": {"host": "localhost", "port": "6379", "ttl": "3600"},
+        "email": {"smtp_host": "localhost", "smtp_port": "587", "username": "test", "password": "test", "from_email": "test@example.com"}
+    })
+    
+    # Test utility functions as providers (access AFTER config is loaded)
+    tax_calc = container.tax_calculator
+    currency_fmt = container.currency_formatter
+    email_validator = container.email_validator
+    user_id_gen = container.user_id_generator
+    password_hasher = container.password_hasher
+    sms_sender = container.sms_sender
+    
+    # Test tax calculation
+    tax_amount = tax_calc(100.0)  # Should be 8.0 (8% of 100)
+    print(f"✓ Tax calculation: ${tax_amount}")
+    
+    # Test currency formatting
+    formatted_amount = currency_fmt(123.45)
+    print(f"✓ Currency formatting: {formatted_amount}")
+    
+    # Test email validation
+    valid_email = email_validator("user@example.com")
+    invalid_email = email_validator("invalid-email")
+    print(f"✓ Email validation - valid: {valid_email}, invalid: {invalid_email}")
+    
+    # Test user ID generation
+    user_id = user_id_gen()
+    print(f"✓ Generated user ID: {user_id}")
+    
+    # Test password hashing
+    hashed_password = password_hasher("secret123")
+    print(f"✓ Password hash: {hashed_password}")
+    
+    # Test SMS sending
+    sms_result = sms_sender("+1234567890", "Test message")
+    print(f"✓ SMS sending: {sms_result}")
+    
+    # Test with wiring
+    container.wire(modules=[__name__])
+    
+    @inject
+    def process_user_signup(email: str, password: str,
+                           validator=Provide('email_validator'),
+                           hasher=Provide('password_hasher'),
+                           id_gen=Provide('user_id_generator'),
+                           sms=Provide('sms_sender')):
+        if not validator(email):
+            return f"Invalid email: {email}"
+        
+        user_id = id_gen()
+        hashed_pwd = hasher(password)
+        sms_result = sms("+1234567890", f"Welcome {user_id}!")
+        
+        return f"User {user_id} created with email {email}, SMS: {sms_result}"
+    
+    signup_result = process_user_signup("newuser@example.com", "mypassword")
+    print(f"✓ User signup: {signup_result}")
+    
+    container.unwire()
+    print("✓ CallableProvider examples completed")
+
+
 if __name__ == "__main__":
     print("Real-World Configuration Example\n")
     
@@ -512,5 +634,6 @@ if __name__ == "__main__":
     test_automatic_wiring()
     test_wiring_with_classes()
     test_wiring_patterns()
+    test_callable_providers()
     
     print("\n🎉 Real-world example completed!")

@@ -4,6 +4,7 @@ from .base import Provider, OverrideContext
 from .factory import FactoryProvider
 from .singleton import SingletonProvider
 from .configuration import ConfigurationProvider, ConfigurationOption, TypedConfigurationOption
+from .callable import CallableProvider
 
 __all__ = [
     'Provider',
@@ -13,4 +14,5 @@ __all__ = [
     'ConfigurationProvider',
     'ConfigurationOption',
     'TypedConfigurationOption',
+    'CallableProvider',
 ]
