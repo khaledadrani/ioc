@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Test script for the new Container system."""
 
-from ioc.providers import FactoryProvider, SingletonProvider
+from ioc import FactoryProvider, SingletonProvider
 from ioc.container import Container, BaseContainer
 from tests.conftest import DummyDatabase, DummyRepository, DummyService
 

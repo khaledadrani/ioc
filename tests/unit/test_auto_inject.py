@@ -6,7 +6,7 @@ import time
 from unittest.mock import Mock
 from ioc.wiring import auto_inject, _inject_by_convention, _set_current_container, _get_current_container
 from ioc.container import Container
-from ioc.providers import FactoryProvider, SingletonProvider
+from ioc import FactoryProvider, SingletonProvider
 from ioc.exceptions import ConventionInjectionError
 
 

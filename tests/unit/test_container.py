@@ -2,8 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 
 from ioc.container import Container, ContainerOverrideContext, BaseContainer
-from ioc.providers import FactoryProvider, SingletonProvider
-from ioc.base_provider import Provider
+from ioc import FactoryProvider, SingletonProvider, Provider
 from tests.conftest import DummyDatabase, DummyRepository, DummyService
 
 

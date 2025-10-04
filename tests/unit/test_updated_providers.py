@@ -1,8 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from ioc.providers import FactoryProvider, SingletonProvider
-from ioc.base_provider import Provider
+from ioc import FactoryProvider, SingletonProvider, Provider
 from ioc.exceptions import ProvideObjectError
 from tests.conftest import DummyDatabase, DummyRepository, DummyService
 

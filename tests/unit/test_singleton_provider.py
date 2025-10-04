@@ -1,6 +1,6 @@
 from functools import partial
 
-from ioc.providers import SingletonProvider
+from ioc import SingletonProvider
 from tests.conftest import DummyDatabase
 
 

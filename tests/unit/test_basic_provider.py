@@ -3,7 +3,7 @@ from functools import partial
 import pytest
 
 from ioc.exceptions import ProvideObjectError, ProvideObjectAttributeError
-from ioc.providers import FactoryProvider
+from ioc import FactoryProvider
 from tests.conftest import DummyDatabase
 
 

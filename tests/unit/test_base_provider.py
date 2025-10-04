@@ -1,7 +1,8 @@
 import pytest
 from unittest.mock import MagicMock
 
-from ioc.base_provider import Provider, OverrideContext
+from ioc import Provider
+from ioc.providers.base import OverrideContext
 from ioc.exceptions import ProvideObjectError
 
 

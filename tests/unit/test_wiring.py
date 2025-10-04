@@ -6,7 +6,7 @@ import time
 from unittest.mock import Mock, MagicMock, patch
 from ioc.wiring import Provide, inject, _inject_dependencies, _resolve_provider, _set_current_container, _get_current_container
 from ioc.container import Container
-from ioc.providers import FactoryProvider, SingletonProvider
+from ioc import FactoryProvider, SingletonProvider
 
 
 class TestProvideMarker:

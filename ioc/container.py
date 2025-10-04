@@ -1,6 +1,6 @@
 """Container module for dependency injection."""
 
-from .base_provider import Provider
+from .providers import Provider
 from .wiring import WiringMixin
 
 
