@@ -5,7 +5,7 @@ import os
 from ioc.config_provider import ConfigurationProvider
 from ioc.providers import FactoryProvider, SingletonProvider
 from ioc.container import BaseContainer
-from ioc.wiring import inject, Provide
+from ioc.wiring import inject, Provide, auto_inject
 
 
 # Application classes

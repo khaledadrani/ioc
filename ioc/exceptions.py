@@ -15,3 +15,8 @@ class ProvideObjectError(GenericException):
 class ProvideObjectAttributeError(GenericException):
     def __init__(self, message: str = "Unable to provide this object attribute!", metadata: dict = None):
         super().__init__(message, metadata)
+
+
+class ConventionInjectionError(ProvideObjectError):
+    def __init__(self, message: str = "Convention-based injection failed!", metadata: dict = None):
+        super().__init__(message, metadata)

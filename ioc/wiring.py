@@ -4,6 +4,7 @@ import contextvars
 import functools
 import inspect
 from typing import Any, Callable, Dict, Optional, Type, Union
+from .exceptions import ConventionInjectionError
 
 
 class Provide:
@@ -34,6 +35,24 @@ def inject(fn: Callable) -> Callable:
     return wrapper
 
 
+def auto_inject(fn: Callable) -> Callable:
+    """Convention-based dependency injection decorator."""
+    
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        # Get the container from the current context
+        container = _get_current_container()
+        if not container:
+            return fn(*args, **kwargs)
+        
+        # Inject dependencies by convention
+        injected_kwargs = _inject_by_convention(fn, container, kwargs)
+        return fn(*args, **injected_kwargs)
+    
+    wrapper.__auto_wired__ = True
+    return wrapper
+
+
 def _inject_dependencies(fn: Callable, container: Any, provided_kwargs: Dict[str, Any]) -> Dict[str, Any]:
     """Inject dependencies into function arguments."""
     sig = inspect.signature(fn)
@@ -55,6 +74,46 @@ def _inject_dependencies(fn: Callable, container: Any, provided_kwargs: Dict[str
                 # If injection fails and no default, let function handle it
                 if param.default is inspect.Parameter.empty:
                     continue
+    
+    return injected_kwargs
+
+
+def _inject_by_convention(fn: Callable, container: Any, provided_kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    """Inject dependencies by parameter name convention."""
+    sig = inspect.signature(fn)
+    injected_kwargs = provided_kwargs.copy()
+    
+    for param_name, param in sig.parameters.items():
+        # Skip if already provided
+        if param_name in provided_kwargs:
+            continue
+            
+        # Try to find provider by parameter name
+        if hasattr(container, param_name):
+            provider = getattr(container, param_name)
+            if callable(provider):
+                # Require type annotation for injected parameters
+                if param.annotation == inspect.Parameter.empty:
+                    raise ConventionInjectionError(
+                        f"Parameter '{param_name}' requires type annotation for auto-injection. "
+                        f"Use: {param_name}: YourType"
+                    )
+                
+                value = provider()
+                expected_type = param.annotation
+                
+                # Strict type checking
+                if not isinstance(value, expected_type):
+                    raise ConventionInjectionError(
+                        f"Parameter '{param_name}' expects {expected_type.__name__}, "
+                        f"got {type(value).__name__}"
+                    )
+                
+                injected_kwargs[param_name] = value
+            else:
+                raise ConventionInjectionError(f"'{param_name}' is not a callable provider")
+        # Only raise error if parameter has no default and no provider found
+        # This allows regular parameters (like user_id) to be passed normally
     
     return injected_kwargs
 
