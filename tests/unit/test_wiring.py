@@ -1,8 +1,10 @@
 """Tests for automatic dependency injection wiring."""
 
 import pytest
+import threading
+import time
 from unittest.mock import Mock, MagicMock, patch
-from ioc.wiring import Provide, inject, _inject_dependencies, _resolve_provider
+from ioc.wiring import Provide, inject, _inject_dependencies, _resolve_provider, _set_current_container, _get_current_container
 from ioc.container import Container
 from ioc.providers import FactoryProvider, SingletonProvider
 
@@ -258,3 +260,97 @@ class TestContainerWiring:
              patch('ioc.wiring._set_current_container') as mock_set:
             container.unwire()
             mock_set.assert_not_called()
+
+
+class TestThreadSafety:
+    """Test thread safety with contextvars."""
+    
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.container1 = Container()
+        self.container2 = Container()
+        
+        self.db1_mock = Mock()
+        self.db2_mock = Mock()
+        self.db1_mock.name = "db1"
+        self.db2_mock.name = "db2"
+        
+        self.container1.set_provider('database', FactoryProvider(lambda: self.db1_mock))
+        self.container2.set_provider('database', FactoryProvider(lambda: self.db2_mock))
+    
+    def test_context_isolation_between_threads_success(self):
+        """Test context isolation between threads.
+        
+        Verifies that each thread maintains its own container context
+        without interference from other threads.
+        """
+        # Arrange
+        container1 = self.container1
+        container2 = self.container2
+        
+        results = {}
+        
+        @inject
+        def get_db_name(db=Provide('database')):
+            return db.name
+        
+        def thread1_work():
+            """Work function for thread 1."""
+            _set_current_container(container1)
+            time.sleep(0.1)  # Allow thread 2 to set its container
+            results['thread1'] = get_db_name()
+        
+        def thread2_work():
+            """Work function for thread 2."""
+            _set_current_container(container2)
+            time.sleep(0.1)  # Allow thread 1 to set its container
+            results['thread2'] = get_db_name()
+        
+        # Act
+        thread1 = threading.Thread(target=thread1_work)
+        thread2 = threading.Thread(target=thread2_work)
+        
+        thread1.start()
+        thread2.start()
+        
+        thread1.join()
+        thread2.join()
+        
+        # Assert
+        assert results['thread1'] == "db1"
+        assert results['thread2'] == "db2"
+    
+    def test_no_context_leakage_between_threads_success(self):
+        """Test no context leakage between threads.
+        
+        Verifies that container context set in one thread
+        does not leak to other threads.
+        """
+        # Arrange
+        container = self.container1
+        
+        results = {}
+        
+        def thread1_work():
+            """Set container in thread 1."""
+            _set_current_container(container)
+            results['thread1_has_container'] = _get_current_container() is not None
+        
+        def thread2_work():
+            """Check if container is available in thread 2 (should be None)."""
+            time.sleep(0.1)  # Wait for thread1 to set container
+            results['thread2_has_container'] = _get_current_container() is not None
+        
+        # Act
+        thread1 = threading.Thread(target=thread1_work)
+        thread2 = threading.Thread(target=thread2_work)
+        
+        thread1.start()
+        thread2.start()
+        
+        thread1.join()
+        thread2.join()
+        
+        # Assert
+        assert results['thread1_has_container'] is True
+        assert results['thread2_has_container'] is False

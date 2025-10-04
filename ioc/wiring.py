@@ -1,5 +1,6 @@
 """Automatic dependency injection wiring system."""
 
+import contextvars
 import functools
 import inspect
 from typing import Any, Callable, Dict, Optional, Type, Union
@@ -72,19 +73,18 @@ def _resolve_provider(container: Any, provider: Any) -> Any:
         return provider()
 
 
-# Global container context
-_current_container = None
+# Context variable for container (thread-safe)
+_current_container = contextvars.ContextVar('container', default=None)
 
 
 def _get_current_container():
     """Get the current container from context."""
-    return _current_container
+    return _current_container.get()
 
 
 def _set_current_container(container):
     """Set the current container context."""
-    global _current_container
-    _current_container = container
+    _current_container.set(container)
 
 
 class WiringMixin:
